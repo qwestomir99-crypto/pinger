@@ -1,7 +1,12 @@
-import requests
+import os
+import sys
 import time
 import threading
+import requests
 from flask import Flask
+
+# Принудительно переключаемся в нужную директорию
+os.chdir('/opt/render/project/src/')
 
 app = Flask(__name__)
 
@@ -22,8 +27,6 @@ def health():
     return "Pinger is alive", 200
 
 if __name__ == "__main__":
-    # Запускаем пинг в фоновом потоке
     threading.Thread(target=ping_main_bot, daemon=True).start()
-    # Запускаем Flask-сервер для Render
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
