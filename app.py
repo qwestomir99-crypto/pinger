@@ -6,14 +6,11 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# --- НАСТРОЙКИ (ЭТОТ URL ДОЛЖЕН БЫТЬ ВИДЕН ИЗВНЕ) ---
-# Используем URL самого пингера, а не основного бота!
-# Это создаст внешний запрос, который Render точно увидит.
+# URL самого пингера (для самопинга)
 PINGER_URL = "https://bot-pinger-88an.onrender.com"
-PING_INTERVAL = 300  # 5 минут
+PING_INTERVAL = 60  # 1 минута — чаще, чтобы гарантированно не спать
 
 def ping_self():
-    """Пингуем САМИ СЕБЯ через внешний URL."""
     while True:
         try:
             r = requests.get(PINGER_URL, timeout=30)
@@ -27,8 +24,8 @@ def health():
     return "Pinger is alive", 200
 
 if __name__ == "__main__":
-    # Запускаем пинг в фоновом потоке (для внешней активности)
+    # Запускаем пинг в фоновом потоке
     threading.Thread(target=ping_self, daemon=True).start()
-    # Запускаем Flask-сервер для Render
+    # Запускаем Flask-сервер
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
