@@ -1,19 +1,29 @@
 import requests
 import time
-import os
+import threading
+from flask import Flask
 
-# URL основного бота (эндпоинт /ping)
+app = Flask(__name__)
+
 MAIN_BOT_URL = "https://ansamb-sledov6-bot.onrender.com/ping"
+PING_INTERVAL = 300  # 5 минут
 
-def ping():
-    try:
-        r = requests.get(MAIN_BOT_URL, timeout=30)
-        print(f"Пинг отправлен. Статус: {r.status_code}")
-    except Exception as e:
-        print(f"Ошибка: {e}")
+def ping_main_bot():
+    while True:
+        try:
+            r = requests.get(MAIN_BOT_URL, timeout=30)
+            print(f"Пинг отправлен. Статус: {r.status_code}")
+        except Exception as e:
+            print(f"Ошибка пинга: {e}")
+        time.sleep(PING_INTERVAL)
+
+@app.route('/')
+def health():
+    return "Pinger is alive", 200
 
 if __name__ == "__main__":
-    print("Пингер запущен. Пингую основного бота раз в 5 минут.")
-    while True:
-        ping()
-        time.sleep(300)  # 5 минут
+    # Запускаем пинг в фоновом потоке
+    threading.Thread(target=ping_main_bot, daemon=True).start()
+    # Запускаем Flask-сервер для Render
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
